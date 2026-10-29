@@ -1,0 +1,12 @@
+# Keep repo clean
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+*~
+*.swp
+*.swo
+node_modules/
+vendor/
+dist/

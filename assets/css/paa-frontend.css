@@ -1,0 +1,58 @@
+/* Minimal front-end styling for the Practice Areas & Attorneys sample plugin. */
+
+.paa-grid {
+	display: grid;
+	gap: 1.5rem;
+	margin: 1.5rem 0;
+}
+
+.paa-grid--2 { grid-template-columns: repeat(2, 1fr); }
+.paa-grid--3 { grid-template-columns: repeat(3, 1fr); }
+.paa-grid--4 { grid-template-columns: repeat(4, 1fr); }
+
+@media (max-width: 640px) {
+	.paa-grid--2, .paa-grid--3, .paa-grid--4 { grid-template-columns: 1fr; }
+}
+
+.paa-grid__item {
+	border: 1px solid #e2e2e2;
+	border-radius: 8px;
+	padding: 1.25rem;
+	background: #fff;
+}
+
+.paa-grid__thumb { max-width: 100%; height: auto; border-radius: 4px; }
+.paa-grid__title { margin: 0.75rem 0 0.25rem; font-size: 1.15rem; }
+.paa-grid__tagline { font-style: italic; color: #555; margin: 0 0 0.5rem; }
+.paa-grid__excerpt { color: #444; }
+
+.paa-card {
+	display: flex;
+	gap: 1.25rem;
+	border: 1px solid #e2e2e2;
+	border-radius: 8px;
+	padding: 1.25rem;
+	background: #fff;
+	max-width: 640px;
+	margin: 1.5rem 0;
+}
+
+.paa-card__photo { border-radius: 4px; flex-shrink: 0; }
+.paa-card__name { margin: 0 0 0.25rem; }
+.paa-card__title { font-weight: 600; margin: 0 0 0.5rem; }
+.paa-card__practices, .paa-card__phone, .paa-card__email, .paa-card__bar { margin: 0.25rem 0; font-size: 0.95rem; }
+
+.paa-profile {
+	display: grid;
+	grid-template-columns: 280px 1fr;
+	gap: 2rem;
+	margin: 2rem 0;
+}
+
+@media (max-width: 700px) {
+	.paa-profile { grid-template-columns: 1fr; }
+}
+
+.paa-profile__photo { max-width: 100%; height: auto; border-radius: 8px; }
+.paa-profile__name { margin-top: 0; }
+.paa-profile__contact a { margin-right: 1rem; }
