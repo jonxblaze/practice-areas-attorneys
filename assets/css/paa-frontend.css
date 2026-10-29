@@ -56,3 +56,62 @@
 .paa-profile__photo { max-width: 100%; height: auto; border-radius: 8px; }
 .paa-profile__name { margin-top: 0; }
 .paa-profile__contact a { margin-right: 1rem; }
+
+/* Attorney directory filter. */
+
+.paa-filter {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin: 1.5rem 0 0.5rem;
+}
+
+.paa-filter a {
+	border: 1px solid #e2e2e2;
+	border-radius: 999px;
+	padding: 0.35rem 0.9rem;
+	text-decoration: none;
+	color: #333;
+	background: #fff;
+}
+
+.paa-filter a.is-active {
+	background: #222;
+	border-color: #222;
+	color: #fff;
+}
+
+/* Cards inside a grid lose their standalone margins. */
+
+.paa-grid .paa-card { margin: 0; max-width: none; }
+
+/* Consultation call-to-action. */
+
+.paa-cta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 1rem;
+	margin: 1.5rem 0;
+}
+
+.paa-cta__button {
+	display: inline-block;
+	background: #222;
+	color: #fff;
+	border-radius: 6px;
+	padding: 0.75rem 1.5rem;
+	text-decoration: none;
+	font-weight: 600;
+}
+
+.paa-cta__button:hover, .paa-cta__button:focus { color: #fff; opacity: 0.9; }
+.paa-cta__phone { font-weight: 600; }
+
+/* Attorneys listed on a single practice area page. */
+
+.paa-practice__tagline { font-style: italic; color: #555; }
+.paa-practice-attorneys { margin: 2rem 0; }
+.paa-practice-attorneys ul { list-style: none; padding: 0; }
+.paa-practice-attorneys li { margin: 0.5rem 0; }
+.paa-practice-attorneys__title { color: #555; margin-left: 0.5rem; }

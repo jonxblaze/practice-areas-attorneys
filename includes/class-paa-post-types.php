@@ -1,7 +1,7 @@
 <?php
 /**
  * Registers the Practice Area and Attorney custom post types,
- * plus the Practice taxonomy linking attorneys to practice areas.
+ * plus the shared Practice taxonomy linking attorneys to practice areas.
  *
  * @package PAA
  */
@@ -39,7 +39,7 @@ class PAA_Post_Types {
 				'has_archive'  => true,
 				'rewrite'      => array( 'slug' => 'practice-areas' ),
 				'show_in_rest' => true,
-				'supports'     => array( 'title', 'editor', 'thumbnail', 'excerpt' ),
+				'supports'     => array( 'title', 'editor', 'thumbnail', 'excerpt', 'page-attributes' ),
 				'menu_icon'    => 'dashicons-briefcase',
 			)
 		);
@@ -56,14 +56,14 @@ class PAA_Post_Types {
 				'has_archive'  => false,
 				'rewrite'      => array( 'slug' => 'attorneys' ),
 				'show_in_rest' => true,
-				'supports'     => array( 'title', 'editor', 'thumbnail', 'excerpt' ),
+				'supports'     => array( 'title', 'editor', 'thumbnail', 'excerpt', 'page-attributes' ),
 				'menu_icon'    => 'dashicons-businessperson',
 			)
 		);
 
 		register_taxonomy(
 			self::TAX_PRACTICE,
-			array( self::ATTORNEY ),
+			array( self::ATTORNEY, self::PRACTICE_AREA ),
 			array(
 				'labels'       => array(
 					'name'          => __( 'Practices', 'paa' ),

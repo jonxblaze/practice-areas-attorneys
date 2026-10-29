@@ -1,8 +1,10 @@
 <?php
 /**
  * Front-end shortcodes:
- *   [attorney_card id="123"]      Profile card for one attorney.
- *   [practice_area_grid columns="3"]  Grid of all practice areas.
+ *   [attorney_card id="123"]                Profile card for one attorney.
+ *   [practice_area_grid columns="3"]        Grid of all practice areas.
+ *   [attorney_directory practice="slug"]    Filterable directory of attorneys.
+ *   [consultation_cta url="/contact/"]     Consultation button + click-to-call.
  *
  * @package PAA
  */
@@ -19,6 +21,8 @@ class PAA_Shortcodes {
 	public static function hooks() {
 		add_shortcode( 'attorney_card', array( __CLASS__, 'attorney_card' ) );
 		add_shortcode( 'practice_area_grid', array( __CLASS__, 'practice_area_grid' ) );
+		add_shortcode( 'attorney_directory', array( __CLASS__, 'attorney_directory' ) );
+		add_shortcode( 'consultation_cta', array( __CLASS__, 'consultation_cta' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
 	}
 
@@ -54,6 +58,16 @@ class PAA_Shortcodes {
 
 		wp_enqueue_style( 'paa-frontend' );
 
+		return self::render_attorney_card( $post_id );
+	}
+
+	/**
+	 * Shared card markup used by [attorney_card] and [attorney_directory].
+	 *
+	 * @param int $post_id Attorney post ID (already validated by the caller).
+	 * @return string
+	 */
+	private static function render_attorney_card( $post_id ) {
 		$name      = get_the_title( $post_id );
 		$job_title = get_post_meta( $post_id, '_paa_job_title', true );
 		$phone     = get_post_meta( $post_id, '_paa_phone', true );
@@ -154,6 +168,144 @@ class PAA_Shortcodes {
 			}
 			wp_reset_postdata();
 			?>
+		</div>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Render a filterable directory of attorneys.
+	 *
+	 * The practice filter comes from the shortcode attribute, or from the
+	 * ?paa_practice=slug query var set by the filter links below.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string
+	 */
+	public static function attorney_directory( $atts ) {
+		$atts = shortcode_atts(
+			array(
+				'practice' => '',
+				'columns'  => 3,
+			),
+			$atts,
+			'attorney_directory'
+		);
+
+		$filter = sanitize_key( $atts['practice'] );
+		if ( '' === $filter && isset( $_GET['paa_practice'] ) ) {
+			$filter = sanitize_key( wp_unslash( $_GET['paa_practice'] ) );
+		}
+
+		$query_args = array(
+			'post_type'      => PAA_Post_Types::ATTORNEY,
+			'posts_per_page' => -1,
+			'orderby'        => 'menu_order title',
+			'order'          => 'ASC',
+			'no_found_rows'  => true,
+		);
+		if ( '' !== $filter ) {
+			$query_args['tax_query'] = array(
+				array(
+					'taxonomy' => PAA_Post_Types::TAX_PRACTICE,
+					'field'    => 'slug',
+					'terms'    => $filter,
+				),
+			);
+		}
+
+		$query = new WP_Query( $query_args );
+
+		wp_enqueue_style( 'paa-frontend' );
+
+		$columns = min( 4, max( 1, absint( $atts['columns'] ) ) );
+
+		ob_start();
+		?>
+		<nav class="paa-filter" aria-label="<?php esc_attr_e( 'Filter attorneys by practice', 'paa' ); ?>">
+			<a href="<?php echo esc_url( remove_query_arg( 'paa_practice' ) ); ?>"
+				<?php echo '' === $filter ? 'class="is-active" aria-current="page"' : ''; ?>>
+				<?php esc_html_e( 'All', 'paa' ); ?>
+			</a>
+			<?php
+			$terms = get_terms(
+				array(
+					'taxonomy'   => PAA_Post_Types::TAX_PRACTICE,
+					'hide_empty' => true,
+				)
+			);
+			if ( $terms && ! is_wp_error( $terms ) ) {
+				foreach ( $terms as $term ) {
+					$active = $filter === $term->slug ? 'class="is-active" aria-current="page"' : '';
+					?>
+					<a href="<?php echo esc_url( add_query_arg( 'paa_practice', $term->slug ) ); ?>"
+						<?php echo $active; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static attribute strings built above. ?>>
+						<?php echo esc_html( $term->name ); ?>
+					</a>
+					<?php
+				}
+			}
+			?>
+		</nav>
+		<?php
+		if ( ! $query->have_posts() ) {
+			?>
+			<p><?php esc_html_e( 'No attorneys found.', 'paa' ); ?></p>
+			<?php
+			return ob_get_clean();
+		}
+		?>
+		<div class="paa-grid paa-grid--<?php echo esc_attr( $columns ); ?>">
+			<?php
+			while ( $query->have_posts() ) {
+				$query->the_post();
+				echo self::render_attorney_card( get_the_ID() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- card markup escaped internally.
+			}
+			wp_reset_postdata();
+			?>
+		</div>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Render a consultation call-to-action: a button plus optional click-to-call.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string
+	 */
+	public static function consultation_cta( $atts ) {
+		$atts = shortcode_atts(
+			array(
+				'url'   => '',
+				'label' => __( 'Request a Free Consultation', 'paa' ),
+				'phone' => '',
+			),
+			$atts,
+			'consultation_cta'
+		);
+
+		$url   = esc_url( $atts['url'] );
+		$phone = sanitize_text_field( $atts['phone'] );
+		if ( '' === $url && '' === $phone ) {
+			return '';
+		}
+
+		wp_enqueue_style( 'paa-frontend' );
+
+		ob_start();
+		?>
+		<div class="paa-cta">
+			<?php if ( '' !== $url ) : ?>
+				<a class="paa-cta__button" href="<?php echo $url; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>">
+					<?php echo esc_html( $atts['label'] ); ?>
+				</a>
+			<?php endif; ?>
+			<?php if ( '' !== $phone ) : ?>
+				<a class="paa-cta__phone" href="tel:<?php echo esc_attr( preg_replace( '/[^+\d]/', '', $phone ) ); ?>">
+					<?php echo esc_html( $phone ); ?>
+				</a>
+			<?php endif; ?>
 		</div>
 		<?php
 		return ob_get_clean();
