@@ -19,10 +19,13 @@ get_header();
 	while ( have_posts() ) {
 		the_post();
 
-		$job_title = get_post_meta( get_the_ID(), '_paa_job_title', true );
-		$phone     = get_post_meta( get_the_ID(), '_paa_phone', true );
-		$email     = get_post_meta( get_the_ID(), '_paa_email', true );
-		$bar       = get_post_meta( get_the_ID(), '_paa_bar', true );
+		$job_title  = get_post_meta( get_the_ID(), '_paa_job_title', true );
+		$phone      = get_post_meta( get_the_ID(), '_paa_phone', true );
+		$email      = get_post_meta( get_the_ID(), '_paa_email', true );
+		$bar        = get_post_meta( get_the_ID(), '_paa_bar', true );
+		$education  = get_post_meta( get_the_ID(), '_paa_education', true );
+		$experience = get_post_meta( get_the_ID(), '_paa_experience', true );
+		$languages  = get_post_meta( get_the_ID(), '_paa_languages', true );
 		$practices = get_the_term_list( get_the_ID(), PAA_Post_Types::TAX_PRACTICE, '', ', ' );
 		?>
 		<article <?php post_class( 'paa-profile' ); ?>>
@@ -56,6 +59,21 @@ get_header();
 				<?php if ( $bar ) : ?>
 					<p class="paa-profile__bar">
 						<?php esc_html_e( 'Bar admissions: ', 'paa' ); ?><?php echo esc_html( $bar ); ?>
+					</p>
+				<?php endif; ?>
+				<?php if ( $education ) : ?>
+					<p class="paa-profile__education">
+						<?php esc_html_e( 'Education: ', 'paa' ); ?><?php echo nl2br( esc_html( $education ) ); ?>
+					</p>
+				<?php endif; ?>
+				<?php if ( $experience ) : ?>
+					<p class="paa-profile__experience">
+						<?php esc_html_e( 'Experience: ', 'paa' ); ?><?php echo esc_html( $experience ); ?>
+					</p>
+				<?php endif; ?>
+				<?php if ( $languages ) : ?>
+					<p class="paa-profile__languages">
+						<?php esc_html_e( 'Languages: ', 'paa' ); ?><?php echo esc_html( $languages ); ?>
 					</p>
 				<?php endif; ?>
 				<div class="paa-profile__bio">

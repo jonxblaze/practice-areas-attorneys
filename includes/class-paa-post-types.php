@@ -16,6 +16,8 @@ class PAA_Post_Types {
 	const ATTORNEY      = 'attorney';
 	const TESTIMONIAL   = 'testimonial';
 	const CONSULTATION  = 'consultation_request';
+	const CASE_RESULT   = 'case_result';
+	const FAQ           = 'paa_faq';
 	const TAX_PRACTICE  = 'paa_practice';
 
 	/**
@@ -65,7 +67,7 @@ class PAA_Post_Types {
 
 		register_taxonomy(
 			self::TAX_PRACTICE,
-			array( self::ATTORNEY, self::PRACTICE_AREA ),
+			array( self::ATTORNEY, self::PRACTICE_AREA, self::CASE_RESULT, self::FAQ ),
 			array(
 				'labels'       => array(
 					'name'          => __( 'Practices', 'paa' ),
@@ -75,6 +77,7 @@ class PAA_Post_Types {
 				'public'       => true,
 				'rewrite'      => array( 'slug' => 'practice' ),
 				'show_in_rest' => true,
+				'show_admin_column' => true,
 			)
 		);
 
@@ -106,6 +109,40 @@ class PAA_Post_Types {
 				'show_ui'      => true,
 				'show_in_menu' => 'edit.php?post_type=' . self::ATTORNEY,
 				'supports'     => array( 'title', 'editor' ),
+			)
+		);
+
+		register_post_type(
+			self::CASE_RESULT,
+			array(
+				'labels'       => array(
+					'name'          => __( 'Case Results', 'paa' ),
+					'singular_name' => __( 'Case Result', 'paa' ),
+					'add_new_item'  => __( 'Add New Case Result', 'paa' ),
+				),
+				'public'       => true,
+				'has_archive'  => true,
+				'rewrite'      => array( 'slug' => 'case-results' ),
+				'show_in_rest' => true,
+				'supports'     => array( 'title', 'editor', 'page-attributes' ),
+				'menu_icon'    => 'dashicons-awards',
+			)
+		);
+
+		register_post_type(
+			self::FAQ,
+			array(
+				'labels'       => array(
+					'name'          => __( 'FAQs', 'paa' ),
+					'singular_name' => __( 'FAQ', 'paa' ),
+					'add_new_item'  => __( 'Add New FAQ', 'paa' ),
+				),
+				'public'       => true,
+				'has_archive'  => false,
+				'rewrite'      => array( 'slug' => 'faqs' ),
+				'show_in_rest' => true,
+				'supports'     => array( 'title', 'editor', 'page-attributes' ),
+				'menu_icon'    => 'dashicons-editor-help',
 			)
 		);
 	}

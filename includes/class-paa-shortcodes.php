@@ -25,6 +25,8 @@ class PAA_Shortcodes {
 		add_shortcode( 'consultation_cta', array( __CLASS__, 'consultation_cta' ) );
 		add_shortcode( 'testimonials', array( __CLASS__, 'testimonials' ) );
 		add_shortcode( 'firm_contact_card', array( __CLASS__, 'firm_contact_card' ) );
+		add_shortcode( 'case_results', array( __CLASS__, 'case_results' ) );
+		add_shortcode( 'faqs', array( __CLASS__, 'faqs' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
 	}
 
@@ -199,6 +201,8 @@ class PAA_Shortcodes {
 			$filter = sanitize_key( wp_unslash( $_GET['paa_practice'] ) );
 		}
 
+		$search = isset( $_GET['paa_search'] ) ? sanitize_text_field( wp_unslash( $_GET['paa_search'] ) ) : '';
+
 		$query_args = array(
 			'post_type'      => PAA_Post_Types::ATTORNEY,
 			'posts_per_page' => -1,
@@ -214,6 +218,9 @@ class PAA_Shortcodes {
 					'terms'    => $filter,
 				),
 			);
+		}
+		if ( '' !== $search ) {
+			$query_args['s'] = $search;
 		}
 
 		$query = new WP_Query( $query_args );
@@ -248,6 +255,14 @@ class PAA_Shortcodes {
 				}
 			}
 			?>
+			<form class="paa-search" method="get" role="search">
+				<?php if ( '' !== $filter ) : ?>
+					<input type="hidden" name="paa_practice" value="<?php echo esc_attr( $filter ); ?>">
+				<?php endif; ?>
+				<label class="screen-reader-text" for="paa-search-input"><?php esc_html_e( 'Search attorneys', 'paa' ); ?></label>
+				<input id="paa-search-input" type="search" name="paa_search" value="<?php echo esc_attr( $search ); ?>" placeholder="<?php esc_attr_e( 'Search attorneys…', 'paa' ); ?>">
+				<button type="submit"><?php esc_html_e( 'Search', 'paa' ); ?></button>
+			</form>
 		</nav>
 		<?php
 		if ( ! $query->have_posts() ) {
@@ -443,6 +458,147 @@ class PAA_Shortcodes {
 			<?php if ( '' !== $hours ) : ?>
 				<p class="paa-contact-card__hours"><?php echo esc_html( $hours ); ?></p>
 			<?php endif; ?>
+		</div>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Render a grid of case results, optionally filtered by practice.
+	 * Always carries the prior-results disclaimer next to the outcomes.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string
+	 */
+	public static function case_results( $atts ) {
+		$atts = shortcode_atts(
+			array(
+				'practice' => '',
+				'columns'  => 3,
+				'count'    => 0,
+			),
+			$atts,
+			'case_results'
+		);
+
+		$query_args = array(
+			'post_type'      => PAA_Post_Types::CASE_RESULT,
+			'post_status'    => 'publish',
+			'posts_per_page' => absint( $atts['count'] ) ? absint( $atts['count'] ) : -1,
+			'orderby'        => 'menu_order date',
+			'order'          => 'DESC',
+			'no_found_rows'  => true,
+		);
+		if ( '' !== $atts['practice'] ) {
+			$query_args['tax_query'] = array(
+				array(
+					'taxonomy' => PAA_Post_Types::TAX_PRACTICE,
+					'field'    => 'slug',
+					'terms'    => sanitize_key( $atts['practice'] ),
+				),
+			);
+		}
+
+		$query = new WP_Query( $query_args );
+
+		if ( ! $query->have_posts() ) {
+			return '';
+		}
+
+		wp_enqueue_style( 'paa-frontend' );
+
+		$columns = min( 4, max( 1, absint( $atts['columns'] ) ) );
+
+		ob_start();
+		?>
+		<div class="paa-grid paa-grid--<?php echo esc_attr( $columns ); ?>">
+			<?php
+			while ( $query->have_posts() ) {
+				$query->the_post();
+				$outcome  = get_post_meta( get_the_ID(), '_paa_case_outcome', true );
+				$year     = get_post_meta( get_the_ID(), '_paa_case_year', true );
+				$practices = get_the_term_list( get_the_ID(), PAA_Post_Types::TAX_PRACTICE, '', ', ' );
+				?>
+				<article class="paa-grid__item paa-case-result">
+					<?php if ( $outcome ) : ?>
+						<p class="paa-case-result__outcome"><?php echo esc_html( $outcome ); ?></p>
+					<?php endif; ?>
+					<h3 class="paa-case-result__title">
+						<a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+					</h3>
+					<?php if ( $practices && ! is_wp_error( $practices ) ) : ?>
+						<p class="paa-case-result__practices"><?php echo wp_kses_post( $practices ); ?></p>
+					<?php endif; ?>
+					<?php if ( $year ) : ?>
+						<p class="paa-case-result__year"><?php echo esc_html( $year ); ?></p>
+					<?php endif; ?>
+					<p class="paa-case-result__excerpt"><?php echo esc_html( get_the_excerpt() ); ?></p>
+				</article>
+				<?php
+			}
+			wp_reset_postdata();
+			?>
+		</div>
+		<p class="paa-disclaimer"><?php esc_html_e( 'Past results do not guarantee similar outcomes.', 'paa' ); ?></p>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Render FAQs, optionally filtered by practice. The FAQPage schema
+	 * for these lives on single practice pages (see PAA_Templates).
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string
+	 */
+	public static function faqs( $atts ) {
+		$atts = shortcode_atts(
+			array( 'practice' => '' ),
+			$atts,
+			'faqs'
+		);
+
+		$query_args = array(
+			'post_type'      => PAA_Post_Types::FAQ,
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'orderby'        => 'menu_order title',
+			'order'          => 'ASC',
+			'no_found_rows'  => true,
+		);
+		if ( '' !== $atts['practice'] ) {
+			$query_args['tax_query'] = array(
+				array(
+					'taxonomy' => PAA_Post_Types::TAX_PRACTICE,
+					'field'    => 'slug',
+					'terms'    => sanitize_key( $atts['practice'] ),
+				),
+			);
+		}
+
+		$query = new WP_Query( $query_args );
+
+		if ( ! $query->have_posts() ) {
+			return '';
+		}
+
+		wp_enqueue_style( 'paa-frontend' );
+
+		ob_start();
+		?>
+		<div class="paa-faqs">
+			<?php
+			while ( $query->have_posts() ) {
+				$query->the_post();
+				?>
+				<article class="paa-faq">
+					<h3 class="paa-faq__question"><?php the_title(); ?></h3>
+					<div class="paa-faq__answer"><?php the_content(); ?></div>
+				</article>
+				<?php
+			}
+			wp_reset_postdata();
+			?>
 		</div>
 		<?php
 		return ob_get_clean();

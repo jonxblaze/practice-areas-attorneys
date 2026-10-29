@@ -152,3 +152,25 @@
 .paa-contact-card { border: 1px solid #e2e2e2; border-radius: 8px; padding: 1.25rem 1.5rem; max-width: 480px; margin: 1.5rem 0; }
 .paa-contact-card__name { margin-top: 0; }
 .paa-contact-card p { margin: 0.35rem 0; }
+
+/* Case results. */
+
+.paa-case-result__outcome { font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem; }
+.paa-case-result__year, .paa-case-result__practices { color: #555; margin: 0.25rem 0; }
+.paa-disclaimer { font-style: italic; color: #555; font-size: 0.9rem; }
+.paa-practice-results ul { list-style: none; padding: 0; }
+.paa-practice-results li { margin: 0.5rem 0; }
+.paa-practice-results__outcome { font-weight: 700; margin-left: 0.5rem; }
+.paa-practice-results__year { color: #555; margin-left: 0.5rem; }
+
+/* FAQs. */
+
+.paa-faq { margin: 1.25rem 0; }
+.paa-faq__question { margin-bottom: 0.25rem; }
+.paa-practice-faqs { margin: 2rem 0; }
+
+/* Directory search. */
+
+.paa-search { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-basis: 100%; }
+.paa-search input[type="search"] { flex: 1; padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 4px; }
+.paa-search button { background: #222; color: #fff; border: 0; border-radius: 4px; padding: 0.4rem 1rem; cursor: pointer; }

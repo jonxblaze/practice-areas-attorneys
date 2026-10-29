@@ -29,9 +29,16 @@ class PAA_Meta_Boxes {
 			'_paa_phone'     => 'sanitize_text_field',
 			'_paa_email'     => 'sanitize_email',
 			'_paa_bar'       => 'sanitize_text_field',
+			'_paa_education' => 'sanitize_textarea_field',
+			'_paa_experience' => 'sanitize_text_field',
+			'_paa_languages' => 'sanitize_text_field',
 		),
 		PAA_Post_Types::TESTIMONIAL   => array(
 			'_paa_testimonial_rating' => 'absint',
+		),
+		PAA_Post_Types::CASE_RESULT   => array(
+			'_paa_case_outcome' => 'sanitize_text_field',
+			'_paa_case_year'    => 'sanitize_text_field',
 		),
 	);
 
@@ -69,6 +76,13 @@ class PAA_Meta_Boxes {
 			PAA_Post_Types::TESTIMONIAL,
 			'side'
 		);
+		add_meta_box(
+			'paa-case-result',
+			__( 'Case Result Details', 'paa' ),
+			array( __CLASS__, 'render_case_result' ),
+			PAA_Post_Types::CASE_RESULT,
+			'side'
+		);
 	}
 
 	/**
@@ -97,10 +111,13 @@ class PAA_Meta_Boxes {
 	public static function render_attorney( $post ) {
 		self::nonce_field();
 		$meta = array(
-			'job_title' => get_post_meta( $post->ID, '_paa_job_title', true ),
-			'phone'     => get_post_meta( $post->ID, '_paa_phone', true ),
-			'email'     => get_post_meta( $post->ID, '_paa_email', true ),
-			'bar'       => get_post_meta( $post->ID, '_paa_bar', true ),
+			'job_title'  => get_post_meta( $post->ID, '_paa_job_title', true ),
+			'phone'      => get_post_meta( $post->ID, '_paa_phone', true ),
+			'email'      => get_post_meta( $post->ID, '_paa_email', true ),
+			'bar'        => get_post_meta( $post->ID, '_paa_bar', true ),
+			'education'  => get_post_meta( $post->ID, '_paa_education', true ),
+			'experience' => get_post_meta( $post->ID, '_paa_experience', true ),
+			'languages'  => get_post_meta( $post->ID, '_paa_languages', true ),
 		);
 		?>
 		<table class="form-table">
@@ -126,6 +143,23 @@ class PAA_Meta_Boxes {
 					value="<?php echo esc_attr( $meta['bar'] ); ?>"
 					placeholder="<?php esc_attr_e( 'e.g. Texas, 2011', 'paa' ); ?>"></td>
 			</tr>
+			<tr>
+				<th><label for="paa-education"><?php esc_html_e( 'Education', 'paa' ); ?></label></th>
+				<td><textarea id="paa-education" name="paa_education" rows="3" class="large-text"
+					placeholder="<?php esc_attr_e( 'e.g. J.D., University of Houston Law Center, 2010', 'paa' ); ?>"><?php echo esc_textarea( $meta['education'] ); ?></textarea></td>
+			</tr>
+			<tr>
+				<th><label for="paa-experience"><?php esc_html_e( 'Experience', 'paa' ); ?></label></th>
+				<td><input type="text" id="paa-experience" name="paa_experience" class="regular-text"
+					value="<?php echo esc_attr( $meta['experience'] ); ?>"
+					placeholder="<?php esc_attr_e( 'e.g. 15 years', 'paa' ); ?>"></td>
+			</tr>
+			<tr>
+				<th><label for="paa-languages"><?php esc_html_e( 'Languages', 'paa' ); ?></label></th>
+				<td><input type="text" id="paa-languages" name="paa_languages" class="regular-text"
+					value="<?php echo esc_attr( $meta['languages'] ); ?>"
+					placeholder="<?php esc_attr_e( 'e.g. English, Spanish', 'paa' ); ?>"></td>
+			</tr>
 		</table>
 		<?php
 	}
@@ -148,6 +182,31 @@ class PAA_Meta_Boxes {
 					</option>
 				<?php endfor; ?>
 			</select>
+		</p>
+		<?php
+	}
+
+	/**
+	 * Render the Case Result box.
+	 *
+	 * @param WP_Post $post Current post.
+	 */
+	public static function render_case_result( $post ) {
+		self::nonce_field();
+		$outcome = get_post_meta( $post->ID, '_paa_case_outcome', true );
+		$year    = get_post_meta( $post->ID, '_paa_case_year', true );
+		?>
+		<p>
+			<label for="paa-outcome"><?php esc_html_e( 'Outcome', 'paa' ); ?></label><br>
+			<input type="text" id="paa-outcome" name="paa_case_outcome" class="widefat"
+				value="<?php echo esc_attr( $outcome ); ?>"
+				placeholder="<?php esc_attr_e( 'e.g. $2.4M settlement', 'paa' ); ?>">
+		</p>
+		<p>
+			<label for="paa-year"><?php esc_html_e( 'Year', 'paa' ); ?></label><br>
+			<input type="text" id="paa-year" name="paa_case_year" class="widefat"
+				value="<?php echo esc_attr( $year ); ?>"
+				placeholder="<?php esc_attr_e( 'e.g. 2024', 'paa' ); ?>">
 		</p>
 		<?php
 	}
