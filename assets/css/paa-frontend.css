@@ -115,3 +115,40 @@
 .paa-practice-attorneys ul { list-style: none; padding: 0; }
 .paa-practice-attorneys li { margin: 0.5rem 0; }
 .paa-practice-attorneys__title { color: #555; margin-left: 0.5rem; }
+
+/* Consultation request form. */
+
+.paa-form { max-width: 640px; margin: 1.5rem 0; }
+.paa-form label { display: block; font-weight: 600; margin-bottom: 0.25rem; }
+.paa-form input[type="text"], .paa-form input[type="email"], .paa-form input[type="tel"],
+.paa-form select, .paa-form textarea {
+	width: 100%;
+	padding: 0.5rem;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	box-sizing: border-box;
+}
+.paa-form button[type="submit"] {
+	background: #222;
+	color: #fff;
+	border: 0;
+	border-radius: 6px;
+	padding: 0.75rem 1.5rem;
+	font-weight: 600;
+	cursor: pointer;
+}
+.paa-hp { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+.paa-notice { padding: 0.75rem 1rem; border-radius: 4px; margin: 1.5rem 0; }
+.paa-notice--success { background: #e6f4ea; border: 1px solid #a3d9a5; }
+.paa-notice--error { background: #fce8e6; border: 1px solid #f5a9a2; }
+
+/* Testimonials. */
+
+.paa-stars { color: #b58900; letter-spacing: 0.15em; margin: 0 0 0.5rem; }
+.paa-testimonial__author { font-weight: 600; margin-top: 0.75rem; }
+
+/* Firm contact card. */
+
+.paa-contact-card { border: 1px solid #e2e2e2; border-radius: 8px; padding: 1.25rem 1.5rem; max-width: 480px; margin: 1.5rem 0; }
+.paa-contact-card__name { margin-top: 0; }
+.paa-contact-card p { margin: 0.35rem 0; }

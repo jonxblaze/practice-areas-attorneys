@@ -23,6 +23,8 @@ class PAA_Shortcodes {
 		add_shortcode( 'practice_area_grid', array( __CLASS__, 'practice_area_grid' ) );
 		add_shortcode( 'attorney_directory', array( __CLASS__, 'attorney_directory' ) );
 		add_shortcode( 'consultation_cta', array( __CLASS__, 'consultation_cta' ) );
+		add_shortcode( 'testimonials', array( __CLASS__, 'testimonials' ) );
+		add_shortcode( 'firm_contact_card', array( __CLASS__, 'firm_contact_card' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
 	}
 
@@ -305,6 +307,141 @@ class PAA_Shortcodes {
 				<a class="paa-cta__phone" href="tel:<?php echo esc_attr( preg_replace( '/[^+\d]/', '', $phone ) ); ?>">
 					<?php echo esc_html( $phone ); ?>
 				</a>
+			<?php endif; ?>
+		</div>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Render a grid of testimonials with star ratings and Review schema.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string
+	 */
+	public static function testimonials( $atts ) {
+		$atts = shortcode_atts(
+			array(
+				'columns' => 3,
+				'count'   => 0,
+			),
+			$atts,
+			'testimonials'
+		);
+
+		$query = new WP_Query(
+			array(
+				'post_type'      => PAA_Post_Types::TESTIMONIAL,
+				'post_status'    => 'publish',
+				'posts_per_page' => absint( $atts['count'] ) ? absint( $atts['count'] ) : -1,
+				'orderby'        => 'date',
+				'order'          => 'DESC',
+				'no_found_rows'  => true,
+			)
+		);
+
+		if ( ! $query->have_posts() ) {
+			return '';
+		}
+
+		wp_enqueue_style( 'paa-frontend' );
+
+		$columns = min( 4, max( 1, absint( $atts['columns'] ) ) );
+		$reviews = array();
+
+		ob_start();
+		?>
+		<div class="paa-grid paa-grid--<?php echo esc_attr( $columns ); ?>">
+			<?php
+			while ( $query->have_posts() ) {
+				$query->the_post();
+				$rating = (int) get_post_meta( get_the_ID(), '_paa_testimonial_rating', true );
+				$body   = get_the_content();
+				if ( $rating >= 1 && $rating <= 5 ) {
+					$reviews[] = array(
+						'@type'        => 'Review',
+						'author'       => array(
+							'@type' => 'Person',
+							'name'  => get_the_title(),
+						),
+						'reviewBody'   => wp_strip_all_tags( $body ),
+						'reviewRating' => array(
+							'@type'       => 'Rating',
+							'ratingValue' => $rating,
+							'bestRating'  => 5,
+						),
+					);
+				}
+				?>
+				<article class="paa-grid__item paa-testimonial">
+					<?php if ( $rating >= 1 && $rating <= 5 ) : ?>
+						<p class="paa-stars" aria-label="<?php echo esc_attr( sprintf( __( 'Rated %d out of 5', 'paa' ), $rating ) ); ?>">
+							<?php echo esc_html( str_repeat( '★', $rating ) . str_repeat( '☆', 5 - $rating ) ); ?>
+						</p>
+					<?php endif; ?>
+					<div class="paa-testimonial__body"><?php the_content(); ?></div>
+					<p class="paa-testimonial__author">&mdash; <?php the_title(); ?></p>
+				</article>
+				<?php
+			}
+			wp_reset_postdata();
+			?>
+		</div>
+		<?php
+		if ( $reviews ) {
+			echo '<script type="application/ld+json">' . wp_json_encode(
+				array(
+					'@context' => 'https://schema.org',
+					'@graph'   => $reviews,
+				)
+			) . '</script>' . "\n";
+		}
+		return ob_get_clean();
+	}
+
+	/**
+	 * Render the firm contact card from the settings page.
+	 *
+	 * @return string
+	 */
+	public static function firm_contact_card() {
+		$name    = PAA_Settings::get( 'firm_name' );
+		$phone   = PAA_Settings::get( 'firm_phone' );
+		$email   = PAA_Settings::get( 'firm_email' );
+		$address = PAA_Settings::get( 'firm_address' );
+		$hours   = PAA_Settings::get( 'firm_hours' );
+
+		if ( '' === $name && '' === $phone && '' === $email && '' === $address && '' === $hours ) {
+			return '';
+		}
+
+		wp_enqueue_style( 'paa-frontend' );
+
+		ob_start();
+		?>
+		<div class="paa-contact-card">
+			<?php if ( '' !== $name ) : ?>
+				<h3 class="paa-contact-card__name"><?php echo esc_html( $name ); ?></h3>
+			<?php endif; ?>
+			<?php if ( '' !== $address ) : ?>
+				<p class="paa-contact-card__address"><?php echo esc_html( $address ); ?></p>
+			<?php endif; ?>
+			<?php if ( '' !== $phone ) : ?>
+				<p class="paa-contact-card__phone">
+					<a href="tel:<?php echo esc_attr( preg_replace( '/[^+\d]/', '', $phone ) ); ?>">
+						<?php echo esc_html( $phone ); ?>
+					</a>
+				</p>
+			<?php endif; ?>
+			<?php if ( '' !== $email ) : ?>
+				<p class="paa-contact-card__email">
+					<a href="mailto:<?php echo esc_attr( antispambot( $email ) ); ?>">
+						<?php echo esc_html( antispambot( $email ) ); ?>
+					</a>
+				</p>
+			<?php endif; ?>
+			<?php if ( '' !== $hours ) : ?>
+				<p class="paa-contact-card__hours"><?php echo esc_html( $hours ); ?></p>
 			<?php endif; ?>
 		</div>
 		<?php

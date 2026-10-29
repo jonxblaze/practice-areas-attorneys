@@ -23,6 +23,7 @@ class PAA_Templates {
 		add_filter( 'template_include', array( __CLASS__, 'template_include' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_fallback_styles' ) );
 		add_action( 'wp_head', array( __CLASS__, 'output_attorney_schema' ) );
+		add_action( 'wp_head', array( __CLASS__, 'output_firm_schema' ) );
 	}
 
 	/**
@@ -118,6 +119,52 @@ class PAA_Templates {
 		$email = get_post_meta( $post_id, '_paa_email', true );
 		if ( $email ) {
 			$schema['email'] = $email;
+		}
+
+		echo '<script type="application/ld+json">' . wp_json_encode( $schema ) . '</script>' . "\n";
+	}
+
+	/**
+	 * Output Schema.org LegalService markup on the front page, from the
+	 * firm details on the settings page. LegalService is the type
+	 * schema.org recommends for firms (Attorney is deprecated there),
+	 * so this complements the Attorney markup on profile pages.
+	 */
+	public static function output_firm_schema() {
+		if ( ! is_front_page() ) {
+			return;
+		}
+
+		$name = PAA_Settings::get( 'firm_name' );
+		if ( '' === $name ) {
+			return;
+		}
+
+		$schema = array(
+			'@context' => 'https://schema.org',
+			'@type'    => 'LegalService',
+			'name'     => $name,
+			'url'      => home_url( '/' ),
+		);
+
+		$phone = PAA_Settings::get( 'firm_phone' );
+		if ( '' !== $phone ) {
+			$schema['telephone'] = $phone;
+		}
+
+		$email = PAA_Settings::get( 'firm_email' );
+		if ( '' !== $email ) {
+			$schema['email'] = $email;
+		}
+
+		$address = PAA_Settings::get( 'firm_address' );
+		if ( '' !== $address ) {
+			$schema['address'] = $address;
+		}
+
+		$hours = PAA_Settings::get( 'firm_hours' );
+		if ( '' !== $hours ) {
+			$schema['openingHours'] = $hours;
 		}
 
 		echo '<script type="application/ld+json">' . wp_json_encode( $schema ) . '</script>' . "\n";

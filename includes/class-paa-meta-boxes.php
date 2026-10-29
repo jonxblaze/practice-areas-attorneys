@@ -30,6 +30,9 @@ class PAA_Meta_Boxes {
 			'_paa_email'     => 'sanitize_email',
 			'_paa_bar'       => 'sanitize_text_field',
 		),
+		PAA_Post_Types::TESTIMONIAL   => array(
+			'_paa_testimonial_rating' => 'absint',
+		),
 	);
 
 	/**
@@ -58,6 +61,13 @@ class PAA_Meta_Boxes {
 			PAA_Post_Types::ATTORNEY,
 			'normal',
 			'high'
+		);
+		add_meta_box(
+			'paa-testimonial',
+			__( 'Testimonial Details', 'paa' ),
+			array( __CLASS__, 'render_testimonial' ),
+			PAA_Post_Types::TESTIMONIAL,
+			'side'
 		);
 	}
 
@@ -121,6 +131,28 @@ class PAA_Meta_Boxes {
 	}
 
 	/**
+	 * Render the Testimonial box.
+	 *
+	 * @param WP_Post $post Current post.
+	 */
+	public static function render_testimonial( $post ) {
+		self::nonce_field();
+		$rating = (int) get_post_meta( $post->ID, '_paa_testimonial_rating', true );
+		?>
+		<p>
+			<label for="paa-rating"><?php esc_html_e( 'Star rating', 'paa' ); ?></label><br>
+			<select id="paa-rating" name="paa_testimonial_rating" class="widefat">
+				<?php for ( $i = 1; $i <= 5; $i++ ) : ?>
+					<option value="<?php echo esc_attr( $i ); ?>" <?php selected( $rating, $i ); ?>>
+						<?php echo esc_html( sprintf( _n( '%d star', '%d stars', $i, 'paa' ), $i ) ); ?>
+					</option>
+				<?php endfor; ?>
+			</select>
+		</p>
+		<?php
+	}
+
+	/**
 	 * Print the nonce field shared by all boxes.
 	 */
 	private static function nonce_field() {
@@ -168,6 +200,11 @@ class PAA_Meta_Boxes {
 			}
 
 			$value = call_user_func( $sanitizer, wp_unslash( $_POST[ $input_name ] ) );
+
+			// Keep the star rating inside 1-5 even if the request was tampered with.
+			if ( '_paa_testimonial_rating' === $meta_key ) {
+				$value = min( 5, max( 1, (int) $value ) );
+			}
 
 			if ( '' === $value ) {
 				delete_post_meta( $post_id, $meta_key );

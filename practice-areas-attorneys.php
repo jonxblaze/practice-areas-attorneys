@@ -3,7 +3,7 @@
  * Plugin Name:       Practice Areas & Attorneys
  * Plugin URI:        https://example.com/practice-areas-attorneys
  * Description:       Registers Practice Area and Attorney custom post types with clean admin fields, front-end templates, and shortcodes. A portfolio code sample demonstrating custom WordPress plugin development.
- * Version:           1.1.0
+ * Version:           1.2.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Jon
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'PAA_VERSION', '1.1.0' );
+define( 'PAA_VERSION', '1.2.0' );
 define( 'PAA_FILE', __FILE__ );
 define( 'PAA_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PAA_URL', plugin_dir_url( __FILE__ ) );
@@ -25,6 +25,8 @@ require_once PAA_DIR . 'includes/class-paa-post-types.php';
 require_once PAA_DIR . 'includes/class-paa-meta-boxes.php';
 require_once PAA_DIR . 'includes/class-paa-shortcodes.php';
 require_once PAA_DIR . 'includes/class-paa-templates.php';
+require_once PAA_DIR . 'includes/class-paa-settings.php';
+require_once PAA_DIR . 'includes/class-paa-consultation-form.php';
 
 /**
  * Runs on plugin activation: registers post types, then flushes rewrite rules
@@ -52,5 +54,7 @@ function paa_init() {
 	PAA_Meta_Boxes::hooks();
 	PAA_Shortcodes::hooks();
 	PAA_Templates::hooks();
+	PAA_Settings::hooks();
+	PAA_Consultation_Form::hooks();
 }
 add_action( 'plugins_loaded', 'paa_init' );

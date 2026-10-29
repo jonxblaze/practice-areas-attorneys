@@ -14,6 +14,8 @@ class PAA_Post_Types {
 
 	const PRACTICE_AREA = 'practice_area';
 	const ATTORNEY      = 'attorney';
+	const TESTIMONIAL   = 'testimonial';
+	const CONSULTATION  = 'consultation_request';
 	const TAX_PRACTICE  = 'paa_practice';
 
 	/**
@@ -73,6 +75,37 @@ class PAA_Post_Types {
 				'public'       => true,
 				'rewrite'      => array( 'slug' => 'practice' ),
 				'show_in_rest' => true,
+			)
+		);
+
+		register_post_type(
+			self::TESTIMONIAL,
+			array(
+				'labels'       => array(
+					'name'          => __( 'Testimonials', 'paa' ),
+					'singular_name' => __( 'Testimonial', 'paa' ),
+					'add_new_item'  => __( 'Add New Testimonial', 'paa' ),
+				),
+				'public'       => true,
+				'has_archive'  => false,
+				'rewrite'      => array( 'slug' => 'testimonials' ),
+				'show_in_rest' => true,
+				'supports'     => array( 'title', 'editor' ),
+				'menu_icon'    => 'dashicons-star-filled',
+			)
+		);
+
+		register_post_type(
+			self::CONSULTATION,
+			array(
+				'labels'       => array(
+					'name'          => __( 'Consultation Requests', 'paa' ),
+					'singular_name' => __( 'Consultation Request', 'paa' ),
+				),
+				'public'       => false,
+				'show_ui'      => true,
+				'show_in_menu' => 'edit.php?post_type=' . self::ATTORNEY,
+				'supports'     => array( 'title', 'editor' ),
 			)
 		);
 	}
